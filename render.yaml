@@ -1,0 +1,6 @@
+services:
+  - type: web
+    name: bodycalendar-my
+    runtime: static
+    buildCommand: ""
+    staticPublishPath: .
