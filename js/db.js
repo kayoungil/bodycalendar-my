@@ -522,7 +522,10 @@ const DB = {
   addRoutine(data) {
     const r = _normalizeRoutineProgramData({ id: this.uuid(), ...data });
     delete r.__normalized;
-    CACHE.routines.push(r); _set(`routines/${r.id}`, r); return r;
+    CACHE.routines.push(r);
+    _set(`routines/${r.id}`, r);
+    _dedupeProgramConventionalDeadlifts();
+    return r;
   },
   updateRoutine(id, updates) {
     const i = CACHE.routines.findIndex(r => r.id === id);
@@ -530,6 +533,7 @@ const DB = {
       CACHE.routines[i] = _normalizeRoutineProgramData({ ...CACHE.routines[i], ...updates });
       delete CACHE.routines[i].__normalized;
       _set(`routines/${id}`, CACHE.routines[i]);
+      _dedupeProgramConventionalDeadlifts();
     }
   },
   deleteRoutine(id) { CACHE.routines = CACHE.routines.filter(r => r.id !== id); _del(`routines/${id}`); },
