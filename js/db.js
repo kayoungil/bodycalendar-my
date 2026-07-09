@@ -180,8 +180,13 @@ function _routineOneRmKey(name = '') {
 }
 
 function _normalizeExerciseName(name = '') {
-  if (/루마니안 데드리프트/.test(name)) return '컨벤셔널 데드리프트';
   return /페이스풀/.test(name) ? '벤트오버 레터럴 레이즈' : name;
+}
+
+function _duplicateExerciseKey(name = '') {
+  const baseName = String(name || '').replace(/^[A-Z]\d\.\s*/, '').trim();
+  if (/^(데드리프트|컨벤셔널 데드리프트|바벨 데드리프트)$/.test(baseName)) return 'deadlift';
+  return baseName;
 }
 
 function _roundHalf(value) {
@@ -331,6 +336,13 @@ function _normalizeRoutineProgramData(routine) {
     });
     changed = true;
     return next;
+  }).filter((ex, index, list) => {
+    const key = _duplicateExerciseKey(ex?.name || '');
+    if (!key) return true;
+    const firstIndex = list.findIndex(item => _duplicateExerciseKey(item?.name || '') === key);
+    const keep = firstIndex === index;
+    changed = changed || !keep;
+    return keep;
   });
   routine.__normalized = changed;
   return routine;
