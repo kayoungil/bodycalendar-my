@@ -357,6 +357,30 @@ function _normalizeAllRoutines() {
     }
     return normalized;
   });
+  _dedupeProgramConventionalDeadlifts();
+}
+
+function _programRoutineGroupKey(routine = {}) {
+  if (!routine.programTitle) return '';
+  return `${routine.memberId || ''}::${routine.programTitle}`;
+}
+
+function _dedupeProgramConventionalDeadlifts() {
+  const seenByProgram = new Set();
+  CACHE.routines.forEach(routine => {
+    const groupKey = _programRoutineGroupKey(routine);
+    if (!groupKey || !Array.isArray(routine.exercises)) return;
+    const before = routine.exercises.length;
+    routine.exercises = routine.exercises.filter(ex => {
+      const key = _duplicateExerciseKey(ex?.name || '');
+      if (key !== 'deadlift') return true;
+      const seenKey = `${groupKey}::${key}`;
+      if (seenByProgram.has(seenKey)) return false;
+      seenByProgram.add(seenKey);
+      return true;
+    });
+    if (routine.exercises.length !== before) _set(`routines/${routine.id}`, routine);
+  });
 }
 
 const DB = {

@@ -127,7 +127,8 @@ const AIProgram = (() => {
     const cfg = normalize(input);
     cfg.weeklyPlan = buildWeeklyPlan(cfg);
     const split = adjustSplitForGoals(getSplit(cfg.days), cfg);
-    const routines = split.map((day, i) => buildDay(day, i + 1, cfg));
+    const usedProgramKeys = new Set();
+    const routines = split.map((day, i) => buildDay(day, i + 1, cfg, usedProgramKeys));
     return {
       title: `${cfg.weeks}주 ${cfg.goalLabel} ${cfg.days}일 프로그램`,
       summary: `${cfg.levelLabel} · ${cfg.weeks}주 · ${cfg.duration}분 · ${cfg.goalLabel}`,
@@ -203,12 +204,16 @@ const AIProgram = (() => {
     return next;
   }
 
-  function buildDay(dayName, index, cfg) {
+  function buildDay(dayName, index, cfg, usedProgramKeys = new Set()) {
     const targets = targetTags(dayName);
     const count = cfg.duration >= 75 ? 7 : cfg.duration >= 55 ? 6 : 5;
     const picked = cfg.pairSets
-      ? applyPairSets(orderCorrectiveFirst(pickExercises(targets, count, cfg, dayName)), cfg, dayName, count)
-      : orderCorrectiveFirst(pickExercises(targets, count, cfg, dayName));
+      ? applyPairSets(orderCorrectiveFirst(pickExercises(targets, count, cfg, dayName, usedProgramKeys)), cfg, dayName, count)
+      : orderCorrectiveFirst(pickExercises(targets, count, cfg, dayName, usedProgramKeys));
+    picked.forEach(ex => {
+      const key = programUniqueExerciseKey(ex);
+      if (key) usedProgramKeys.add(key);
+    });
     const exercises = picked.map((ex, idx) => toPrescription(ex, idx, cfg, picked, dayName));
     if (needsCardio(cfg, dayName)) exercises.push(cardioPrescription(cfg));
     return {
@@ -301,8 +306,8 @@ const AIProgram = (() => {
     return ['knee-dominant','horizontal-push','horizontal-pull','hinge','vertical-pull','core'];
   }
 
-  function pickExercises(tags, count, cfg, dayName) {
-    const pool = catalog.filter(ex => allowed(ex, cfg) && allowedForDay(ex, dayName));
+  function pickExercises(tags, count, cfg, dayName, usedProgramKeys = new Set()) {
+    const pool = catalog.filter(ex => allowed(ex, cfg) && allowedForDay(ex, dayName) && !usedProgramKeys.has(programUniqueExerciseKey(ex)));
     const picked = [];
     const hasPicked = ex => picked.some(item => duplicateExerciseKey(item) === duplicateExerciseKey(ex));
     const addPicked = ex => {
@@ -437,6 +442,11 @@ const AIProgram = (() => {
       .trim();
     if (/^(데드리프트|컨벤셔널 데드리프트|바벨 데드리프트)$/.test(name)) return 'deadlift';
     return name;
+  }
+
+  function programUniqueExerciseKey(ex) {
+    const key = duplicateExerciseKey(ex);
+    return key === 'deadlift' ? key : '';
   }
 
   function scoreExercise(ex, dayName, tag, cfg) {
