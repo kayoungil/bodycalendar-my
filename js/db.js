@@ -248,7 +248,15 @@ function _bodyweightFocusLabel(name = '') {
 function _normalizeRoutineProgramData(routine) {
   if (!routine || !Array.isArray(routine.exercises)) return routine;
   let changed = false;
-  const member = routine.memberId ? CACHE.members.find(m => m.id === routine.memberId) : null;
+  const member = routine.memberId
+    ? CACHE.members.find(m => m.id === routine.memberId)
+    : routine.memberName
+      ? CACHE.members.find(m => m.name === routine.memberName)
+      : null;
+  if (!routine.memberId && member?.id) {
+    routine.memberId = member.id;
+    changed = true;
+  }
   const oneRms = { ...(member?.oneRms || {}), ...(routine.oneRms || {}) };
   routine.exercises = routine.exercises.map(ex => {
     if (!ex) return ex;
@@ -438,7 +446,11 @@ const DB = {
   },
   updateMember(id, updates) {
     const i = CACHE.members.findIndex(m => m.id === id);
-    if (i !== -1) { CACHE.members[i] = { ...CACHE.members[i], ...updates }; _set(`members/${id}`, CACHE.members[i]); }
+    if (i !== -1) {
+      CACHE.members[i] = { ...CACHE.members[i], ...updates };
+      _set(`members/${id}`, CACHE.members[i]);
+      if (updates && Object.prototype.hasOwnProperty.call(updates, 'oneRms')) _normalizeAllRoutines();
+    }
   },
   deleteMember(id) {
     ['sessions','schedules','pt_packages','weight_logs'].forEach(col => {

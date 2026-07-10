@@ -132,6 +132,9 @@ const AIProgram = (() => {
     return {
       title: `${cfg.weeks}주 ${cfg.goalLabel} ${cfg.days}일 프로그램`,
       summary: `${cfg.levelLabel} · ${cfg.weeks}주 · ${cfg.duration}분 · ${cfg.goalLabel}`,
+      memberId: cfg.memberId || '',
+      memberName: cfg.memberName || '',
+      oneRms: cfg.oneRms || {},
       evidence,
       weeklyPlan: cfg.weeklyPlan,
       routines

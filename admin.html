@@ -1003,8 +1003,8 @@
 
 <div id="toast"></div>
 <script src="js/app-config.js?v=20260708-firebase-sync"></script>
-<script src="js/db.js?v=20260709-conventional-savefix"></script>
-<script src="js/program-ai.js?v=20260709-conventional-savefix"></script>
+<script src="js/db.js?v=20260710-rm-snapshot"></script>
+<script src="js/program-ai.js?v=20260710-rm-snapshot"></script>
 <script>
 if (DB.getRole() !== 'admin') { location.href = 'index.html'; }
 
@@ -2728,6 +2728,7 @@ function generateProgramPreview() {
     return;
   }
   const input = {
+    memberId: member?.id || '',
     memberName: member?.name || '',
     goals,
     level: document.getElementById('ai-level').value,
@@ -2798,8 +2799,9 @@ function saveGeneratedProgram() {
     programTitle: generatedProgram.title,
     programSummary: generatedProgram.summary,
     programWeeklyPlan: generatedProgram.weeklyPlan || [],
-    memberId: '',
-    memberName: ''
+    memberId: generatedProgram.memberId || '',
+    memberName: generatedProgram.memberName || '',
+    oneRms: generatedProgram.oneRms || {}
   }));
   closeModal('modal-program-ai');
   renderRoutinesPanel();
