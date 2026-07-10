@@ -257,7 +257,16 @@ function _normalizeRoutineProgramData(routine) {
     routine.memberId = member.id;
     changed = true;
   }
-  const oneRms = { ...(member?.oneRms || {}), ...(routine.oneRms || {}) };
+  // 회원에 연결된 프로그램은 회원 1RM을 우선으로 다시 계산한다.
+  // 루틴 자체 1RM은 독립 루틴용 스냅샷으로만 남긴다.
+  const oneRms = member ? { ...(routine.oneRms || {}), ...(member.oneRms || {}) } : { ...(routine.oneRms || {}) };
+  if (member?.oneRms) {
+    const mergedOneRms = { ...(routine.oneRms || {}), ...(member.oneRms || {}) };
+    if (JSON.stringify(routine.oneRms || {}) !== JSON.stringify(mergedOneRms)) {
+      routine.oneRms = mergedOneRms;
+      changed = true;
+    }
+  }
   routine.exercises = routine.exercises.map(ex => {
     if (!ex) return ex;
     const next = { ...ex };
