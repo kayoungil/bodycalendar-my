@@ -641,7 +641,7 @@ function renderProgramsTab() {
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
               ${program.weeklyPlan.map(w=>`<button type="button" onclick="selectMemberProgramWeek('${program.id}', ${w.week})" style="text-align:left;border:1.5px solid ${(selectedMemberProgramWeeks.get(program.id)||1)===w.week?'var(--primary)':'var(--border)'};border-radius:8px;padding:8px;background:${(selectedMemberProgramWeeks.get(program.id)||1)===w.week?'var(--primary-light)':'var(--bg)'};cursor:pointer">
                 <div style="font-size:0.78rem;font-weight:800">${w.week}주차 · ${w.focus}</div>
-                <div style="font-size:0.72rem;color:var(--text-2)">강도 ${w.delta>0?'+':''}${w.delta}% · ${w.rpe}</div>
+                <div style="font-size:0.72rem;color:var(--text-2)">진행강도 ${w.delta>0?'+':''}${w.delta}% · ${w.rpe}</div>
                 <div style="font-size:0.72rem;color:var(--text-2)">${w.volume}</div>
               </button>`).join('')}
             </div>

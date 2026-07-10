@@ -2786,11 +2786,11 @@ function renderProgramPreview(program) {
       <div style="font-size:0.8rem;color:var(--text-2)">${program.summary}</div>
     </div>
     <div style="border:1.5px solid var(--border);border-radius:8px;padding:12px;background:#fff">
-      <div style="font-size:0.8rem;font-weight:800;margin-bottom:8px">주차별 강도 조절</div>
+      <div style="font-size:0.8rem;font-weight:800;margin-bottom:8px">주차별 진행강도</div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:6px">
         ${(program.weeklyPlan||[]).map(w=>`<div style="border:1px solid var(--border);border-radius:8px;padding:8px;background:var(--bg)">
           <div style="font-weight:800;font-size:0.8rem">${w.week}주차 · ${w.focus}</div>
-          <div style="font-size:0.74rem;color:var(--text-2)">강도 ${w.delta>0?'+':''}${w.delta}% · ${w.rpe}</div>
+          <div style="font-size:0.74rem;color:var(--text-2)">진행강도 ${w.delta>0?'+':''}${w.delta}% · ${w.rpe}</div>
           <div style="font-size:0.74rem;color:var(--text-2)">${w.volume}</div>
         </div>`).join('')}
       </div>
