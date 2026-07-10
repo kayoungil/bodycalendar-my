@@ -869,10 +869,22 @@
 
       <div class="divider"></div>
       <div class="section-title" style="margin-bottom:8px">1RM 기준 중량 (kg)</div>
-      <div class="grid-1">
+      <div class="grid-2">
         <div class="input-group">
-          <label>주요 1RM</label>
-          <input class="input ai-1rm" type="number" id="ai-1rm-main" step="0.5" placeholder="스쿼트/벤치/데드리프트/오버헤드프레스 공통">
+          <label>스쿼트 1RM</label>
+          <input class="input ai-1rm" type="number" id="ai-1rm-squat" step="0.5" placeholder="스쿼트">
+        </div>
+        <div class="input-group">
+          <label>데드리프트 1RM</label>
+          <input class="input ai-1rm" type="number" id="ai-1rm-deadlift" step="0.5" placeholder="데드리프트">
+        </div>
+        <div class="input-group">
+          <label>벤치프레스 1RM</label>
+          <input class="input ai-1rm" type="number" id="ai-1rm-bench" step="0.5" placeholder="벤치프레스">
+        </div>
+        <div class="input-group">
+          <label>오버헤드프레스 1RM</label>
+          <input class="input ai-1rm" type="number" id="ai-1rm-press" step="0.5" placeholder="오버헤드프레스">
         </div>
       </div>
 
@@ -927,6 +939,27 @@
       <div class="input-group">
         <label>설명</label>
         <input class="input" type="text" id="r-desc" placeholder="루틴 설명">
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-title" style="margin-bottom:8px">1RM 기준 중량 (kg)</div>
+      <div class="grid-2">
+        <div class="input-group">
+          <label>스쿼트 1RM</label>
+          <input class="input routine-one-rm" data-key="squat" type="number" step="0.5" placeholder="스쿼트">
+        </div>
+        <div class="input-group">
+          <label>데드리프트 1RM</label>
+          <input class="input routine-one-rm" data-key="deadlift" type="number" step="0.5" placeholder="데드리프트">
+        </div>
+        <div class="input-group">
+          <label>벤치프레스 1RM</label>
+          <input class="input routine-one-rm" data-key="bench" type="number" step="0.5" placeholder="벤치프레스">
+        </div>
+        <div class="input-group">
+          <label>오버헤드프레스 1RM</label>
+          <input class="input routine-one-rm" data-key="press" type="number" step="0.5" placeholder="오버헤드프레스">
+        </div>
       </div>
 
       <div class="divider"></div>
@@ -2703,21 +2736,20 @@ function populateProgramMemberSelect() {
 function loadAiMemberOneRms() {
   const member = DB.getMember(document.getElementById('ai-member')?.value);
   const oneRms = member?.oneRms || {};
-  const main = getUnifiedMainOneRm(oneRms);
-  const el = document.getElementById('ai-1rm-main');
-  if (el) el.value = main || '';
+  const fallback = getUnifiedMainOneRm(oneRms);
+  ['squat', 'deadlift', 'bench', 'press'].forEach(key => {
+    const el = document.getElementById(`ai-1rm-${key}`);
+    if (el) el.value = oneRms[key] || fallback || '';
+  });
 }
 
 function collectAiOneRms() {
-  const value = parseFloat(document.getElementById('ai-1rm-main')?.value);
-  if (!(value > 0)) return {};
-  return {
-    main: value,
-    squat: value,
-    bench: value,
-    deadlift: value,
-    press: value
-  };
+  const oneRms = {};
+  ['squat', 'deadlift', 'bench', 'press'].forEach(key => {
+    const value = parseFloat(document.getElementById(`ai-1rm-${key}`)?.value);
+    if (value > 0) oneRms[key] = value;
+  });
+  return oneRms;
 }
 
 function generateProgramPreview() {
@@ -2940,12 +2972,6 @@ function addRoutineExercise(data) {
     <div id="rsets-${id}"></div>
     <button class="btn btn-ghost btn-sm mt-2" onclick="addRoutineSet(${id})">+ 세트 추가</button>
     <details style="margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:8px;background:#fff">
-      <summary style="cursor:pointer;font-size:0.8rem;font-weight:800">1RM 기준값</summary>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px;margin-top:8px">
-        <div class="input-group"><label>주요 1RM</label><input class="input routine-one-rm" data-key="main" type="number" step="0.5" placeholder="스쿼트/벤치/데드리프트/오버헤드프레스 공통"></div>
-      </div>
-    </details>
-    <details style="margin-top:10px;border:1px solid var(--border);border-radius:8px;padding:8px;background:#fff">
       <summary style="cursor:pointer;font-size:0.8rem;font-weight:800">주차별 중량/횟수 수정</summary>
       <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;flex-wrap:wrap">
         <span style="font-size:0.74rem;color:var(--text-2)">운동명과 회원 1RM 또는 1주차 중량 기준으로 8주를 계산합니다.</span>
@@ -3080,9 +3106,10 @@ function updateRoutineExCount() {
 }
 
 function loadRoutineOneRmInputs(oneRms = {}) {
-  const main = getUnifiedMainOneRm(oneRms);
+  const fallback = getUnifiedMainOneRm(oneRms);
   document.querySelectorAll('.routine-one-rm').forEach(input => {
-    input.value = main || '';
+    const key = input.dataset.key || '';
+    input.value = oneRms[key] || fallback || '';
   });
   bindRoutineOneRmAutoFill();
 }
@@ -3092,27 +3119,23 @@ function clearRoutineOneRmInputs() {
 }
 
 function collectRoutineOneRmValues() {
-  const value = parseFloat(document.querySelector('.routine-one-rm')?.value);
-  if (!(value > 0)) return {};
-  return {
-    main: value,
-    squat: value,
-    bench: value,
-    deadlift: value,
-    press: value
-  };
+  const oneRms = {};
+  document.querySelectorAll('.routine-one-rm').forEach(input => {
+    const key = input.dataset.key || '';
+    const value = parseFloat(input.value);
+    if (key && value > 0) oneRms[key] = value;
+  });
+  return oneRms;
 }
 
 function getRoutineOneRmValues(block) {
-  const value = parseFloat(block?.querySelector('.routine-one-rm')?.value);
-  if (!(value > 0)) return {};
-  return {
-    main: value,
-    squat: value,
-    bench: value,
-    deadlift: value,
-    press: value
-  };
+  const oneRms = {};
+  block?.querySelectorAll('.routine-one-rm').forEach(input => {
+    const key = input.dataset.key || '';
+    const value = parseFloat(input.value);
+    if (key && value > 0) oneRms[key] = value;
+  });
+  return oneRms;
 }
 
 function getUnifiedMainOneRm(oneRms = {}) {

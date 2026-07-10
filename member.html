@@ -153,10 +153,22 @@
       <div class="card mb-4">
         <div class="card-header"><span class="card-title">🏋️ 1RM 기록</span></div>
         <div class="card-body" style="display:flex;flex-direction:column;gap:12px">
-          <div class="grid-1">
+          <div class="grid-2">
             <div class="input-group">
-              <label>주요 1RM</label>
-              <input class="input one-rm-input" type="number" id="one-rm-main" step="0.5" placeholder="스쿼트/벤치/데드리프트/오버헤드프레스 공통">
+              <label>스쿼트 1RM</label>
+              <input class="input one-rm-input" type="number" id="one-rm-squat" step="0.5" placeholder="스쿼트">
+            </div>
+            <div class="input-group">
+              <label>데드리프트 1RM</label>
+              <input class="input one-rm-input" type="number" id="one-rm-deadlift" step="0.5" placeholder="데드리프트">
+            </div>
+            <div class="input-group">
+              <label>벤치프레스 1RM</label>
+              <input class="input one-rm-input" type="number" id="one-rm-bench" step="0.5" placeholder="벤치프레스">
+            </div>
+            <div class="input-group">
+              <label>오버헤드프레스 1RM</label>
+              <input class="input one-rm-input" type="number" id="one-rm-press" step="0.5" placeholder="오버헤드프레스">
             </div>
           </div>
           <button class="btn btn-primary" onclick="saveOneRms()">1RM 저장</button>
@@ -966,20 +978,19 @@ function renderProfile() {
 
 function loadOneRms() {
   const oneRms = DB.getMember(memberId)?.oneRms || {};
-  const main = getUnifiedMainOneRm(oneRms);
-  const el = document.getElementById('one-rm-main');
-  if (el) el.value = main || '';
+  const fallback = getUnifiedMainOneRm(oneRms);
+  ['squat', 'deadlift', 'bench', 'press'].forEach(key => {
+    const el = document.getElementById(`one-rm-${key}`);
+    if (el) el.value = oneRms[key] || fallback || '';
+  });
 }
 
 function saveOneRms() {
-  const value = parseFloat(document.getElementById('one-rm-main')?.value);
-  const oneRms = value > 0 ? {
-    main: value,
-    squat: value,
-    bench: value,
-    deadlift: value,
-    press: value
-  } : {};
+  const oneRms = {};
+  ['squat', 'deadlift', 'bench', 'press'].forEach(key => {
+    const value = parseFloat(document.getElementById(`one-rm-${key}`)?.value);
+    if (value > 0) oneRms[key] = value;
+  });
   DB.updateMember(memberId, { oneRms });
   member = DB.getMember(memberId);
   toast('1RM 기록이 저장되었습니다', 'success');
