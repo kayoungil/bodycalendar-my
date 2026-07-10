@@ -786,7 +786,7 @@ const AIProgram = (() => {
   function prescribeWeight(ex, percent, cfg) {
     if (!percent || !cfg.oneRms) return '';
     const key = oneRmKey(ex.name);
-    const oneRm = key ? parseFloat(cfg.oneRms[key]) : 0;
+    const oneRm = key ? parseFloat(cfg.oneRms[key] || cfg.oneRms.main || 0) : 0;
     if (!oneRm) return '';
     return String(roundToHalf((oneRm * percent) / 100));
   }

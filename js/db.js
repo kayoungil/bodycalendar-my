@@ -308,7 +308,7 @@ function _normalizeRoutineProgramData(routine) {
     if (!bigThreeKey && !isAccessory) return next;
 
     const key = bigThreeKey || _routineOneRmKey(next.name);
-    const oneRm = key ? parseFloat(oneRms[key]) : 0;
+    const oneRm = key ? parseFloat(oneRms[key] || oneRms.main || 0) : 0;
     const existingLoads = Array.isArray(next.weeklyLoads) ? next.weeklyLoads : [];
     const firstWeekWeight = parseFloat(existingLoads.find(w => w?.week === 1)?.weight);
     const firstSetWeight = parseFloat((next.sets || []).find(s => parseFloat(s?.weight) > 0)?.weight);
